@@ -38,8 +38,11 @@ namespace bdProject
             radioButtonParticiple.Enabled = false;
             radioButtonVerb.Enabled = false;
             textBoxSentNumber.Enabled = false;
-            //        textBoxBDLocation.Text = "C:\\Users\\Мария\\Documents\\MEPHI\\7 семестр\\нир\\Бд.accdb";
-            //        textBoxTableName.Text = "1";
+            textBoxBDLocation.Text = "C:\\Users\\Мария.pursealPC\\Dropbox\\7 семестр\\нир\\Бд.accdb";
+            textBoxTableName.Text = "010_103_sign_words";
+            checkBoxPartOfSpeech.Checked = true;
+            radioButtonNoun.Checked = true;
+            nTextBox.Text = "10";
 
             //      dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
         }
@@ -361,10 +364,10 @@ namespace bdProject
                     }
                     DataRow row = allStat.NewRow();
                     row["НормФорма"] = param.word;
-                    row["минимФрагмент"] = stat.d1;
+                    row["минимФрагмент"] = Math.Round((double)stat.d1 / sentCount, 6);
                     row["минНачНомерПредл"] = Math.Round((double)stat.d1SentNumberBegin / sentCount, 5);
                     row["минКонНомерПредл"] = Math.Round((double)stat.d1SentNumberEnd / sentCount, 5);
-                    row["максФрагмент"] = stat.D1;
+                    row["максФрагмент"] = Math.Round((double)stat.D1 / sentCount, 6);
                     row["максНачНомерПредл"] = Math.Round((double)stat.D1SentNumberBegin / sentCount, 5);
                     row["максКонНомерПредл"] = Math.Round((double)stat.D1SentNumberEnd / sentCount, 5);
                     allStat.Rows.Add(row);

@@ -97,5 +97,10 @@ namespace bdProject
                 }
             }
         }
+
+        private void TerminSurroundingsForm_Resize(object sender, EventArgs e)
+        {
+            dataGridView1.Size = ClientSize;
+        }
     }
 }
