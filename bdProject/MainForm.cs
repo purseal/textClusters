@@ -21,12 +21,12 @@ namespace bdProject
         /// paramSentNumber - sentence number of selected word or in filtering
         /// radius - maximum words count between selected word and term
         /// </summary>
-        string BDLocation;
-        string tableName;
+        public static string BDLocation;
+        public static string tableName;
         string paramPartOfSpeech;
         string termSurPartOfSpeech;
         string paramSentNumber;
-        DataSet dataSet;
+     //   DataSet dataSet;
         public static DataSet ds;
 
         public MainForm()
@@ -56,7 +56,7 @@ namespace bdProject
             }
         }
 
-        int sentCount;
+        public static int sentCount;
 
         private void buttonLoadTable_Click(object sender, EventArgs e)
         {
@@ -249,34 +249,18 @@ namespace bdProject
             if (dataGridView1.SelectedCells.Count != 1)
                 goto end2;
             string curWord = dataGridView1.CurrentCell.Value.ToString();
-            //    int rowNumber = dataGridView1.CurrentRow.Index;
-            //BDLocation = textBoxBDLocation.Text;
-            //tableName = textBoxTableName.Text;
             Parameters param = new Parameters();
             param.word = curWord;
             int[] frqMas = new int[11];
             try
             {
                 GetSentForSelectedWord sentDistr = new GetSentForSelectedWord(BDLocation, tableName, param);
-                frqMas = sentDistr.GetFreqDestribution(sentDistr, sentCount);
+                frqMas = sentDistr.GetFreqDestribution(sentDistr, sentCount, 11);
                 string output = "";
                 for (int i = 0; i < 11; i++)
                     output += frqMas[i] + " ";
                 TerminSurroundingsForm form2 = new TerminSurroundingsForm(sentDistr.dataSet);
                 DataRowCollection rows = sentDistr.dataSet.Tables[0].Rows;
-                //    int[] frqMas = new int[11];
-                //    int k = 0;
-                //    string output = "";
-                //    for (int j = 0; j < rows.Count; j++)
-                //    {
-                //        while (Convert.ToInt32(rows[j][1]) > (k + 1) * (sentCount / 10))
-                //        {
-                //            output += frqMas[k] + " ";
-                //            k++;
-                //        }
-                //        frqMas[k] += 1;
-                //    }
-                //    output += frqMas[k];
                 form2.Text = rows.Count + " предложений из " + sentCount;
                 form2.ClientSize = new Size(form2.dataGridView1.Size.Width, form2.ClientSize.Height);
                 form2.Show();
@@ -324,17 +308,19 @@ namespace bdProject
             DataTable allStat = new DataTable();
             allStat.Columns.Add(new DataColumn("НормФорма"));
             allStat.Columns.Add(new DataColumn("минимФрагмент"));
-            allStat.Columns["минимФрагмент"].DataType = typeof(int);
+            allStat.Columns["минимФрагмент"].DataType = typeof(double);
             allStat.Columns.Add(new DataColumn("минНачНомерПредл"));
             allStat.Columns["минНачНомерПредл"].DataType = typeof(double);
             allStat.Columns.Add(new DataColumn("минКонНомерПредл"));
             allStat.Columns["минКонНомерПредл"].DataType = typeof(double);
             allStat.Columns.Add(new DataColumn("максФрагмент"));
-            allStat.Columns["максФрагмент"].DataType = typeof(int);
+            allStat.Columns["максФрагмент"].DataType = typeof(double);
             allStat.Columns.Add(new DataColumn("максНачНомерПредл"));
             allStat.Columns["максНачНомерПредл"].DataType = typeof(double);
             allStat.Columns.Add(new DataColumn("максКонНомерПредл"));
             allStat.Columns["максКонНомерПредл"].DataType = typeof(double);
+            allStat.Columns.Add(new DataColumn("макс/мин"));
+            allStat.Columns["макс/мин"].DataType = typeof(double);
             try
             {
                 DataRowCollection wordRow = ds.Tables[0].Rows;
@@ -365,20 +351,27 @@ namespace bdProject
                     DataRow row = allStat.NewRow();
                     row["НормФорма"] = param.word;
                     row["минимФрагмент"] = Math.Round((double)stat.d1 / sentCount, 6);
-                    row["минНачНомерПредл"] = Math.Round((double)stat.d1SentNumberBegin / sentCount, 5);
-                    row["минКонНомерПредл"] = Math.Round((double)stat.d1SentNumberEnd / sentCount, 5);
+              //      row["минНачНомерПредл"] = Math.Round((double)stat.d1SentNumberBegin / sentCount, 5);
+                    row["минНачНомерПредл"] = (double)stat.d1SentNumberBegin;
+                    //      row["минКонНомерПредл"] = Math.Round((double)stat.d1SentNumberEnd / sentCount, 5);
+                    row["минКонНомерПредл"] = (double)stat.d1SentNumberEnd;
                     row["максФрагмент"] = Math.Round((double)stat.D1 / sentCount, 6);
-                    row["максНачНомерПредл"] = Math.Round((double)stat.D1SentNumberBegin / sentCount, 5);
-                    row["максКонНомерПредл"] = Math.Round((double)stat.D1SentNumberEnd / sentCount, 5);
+                    //      row["максНачНомерПредл"] = Math.Round((double)stat.D1SentNumberBegin / sentCount, 5);
+                    row["максНачНомерПредл"] = (double)stat.D1SentNumberBegin;
+                    //    row["максКонНомерПредл"] = Math.Round((double)stat.D1SentNumberEnd / sentCount, 5);
+                    row["максКонНомерПредл"] = (double)stat.D1SentNumberEnd;
+                    if (stat.d1 == 0) row["макс/мин"] = sentCount;
+                    else row["макс/мин"] = Math.Round((double)stat.D1 / stat.d1, 5);
                     allStat.Rows.Add(row);
                 }
-                allStat.DefaultView.Sort = "минНачНомерПредл";
+                allStat.DefaultView.Sort = "макс/мин DESC";
                 allStat = allStat.DefaultView.ToTable();
                 DataSet dst = new DataSet();
                 dst.Tables.Add(allStat);
-                TerminSurroundingsForm form2 = new TerminSurroundingsForm(dst);
-                form2.dataGridView1.Columns["минимФрагмент"].DefaultCellStyle.BackColor = Color.LightGray;
-                form2.dataGridView1.Columns["максФрагмент"].DefaultCellStyle.BackColor = Color.LightGray;
+                FreqDestributionForm form2 = new FreqDestributionForm(dst);
+                form2.destributionTable.Columns["минимФрагмент"].DefaultCellStyle.BackColor = Color.LightGray;
+                form2.destributionTable.Columns["максФрагмент"].DefaultCellStyle.BackColor = Color.LightGray;
+                form2.destributionTable.Columns["макс/мин"].DefaultCellStyle.BackColor = Color.LightGray;
                 form2.Text = "Статистики";
                 form2.Show();
             }
@@ -412,7 +405,7 @@ namespace bdProject
                 if (i == 10)
                     sentInterval = Convert.ToString(i * sentStep) + "-" + Convert.ToString(sentCount);
                 else
-                    sentInterval = Convert.ToString(i * sentStep) + "-" + Convert.ToString(sentCount);
+                    sentInterval = Convert.ToString(i * sentStep) + "-" + Convert.ToString((i + 1 ) * sentStep - 1);
                 allFreq.Columns.Add(new DataColumn(sentInterval));
                 allFreq.Columns[sentInterval].DataType = typeof(string);
             }            
@@ -425,7 +418,7 @@ namespace bdProject
                     Parameters param = new Parameters();
                     param.word = wordRows[j][0].ToString();
                     GetSentForSelectedWord sentFreq = new GetSentForSelectedWord(BDLocation, tableName, param);
-                    int[] frqMas = sentFreq.GetFreqDestribution(sentFreq, sentCount);
+                    int[] frqMas = sentFreq.GetFreqDestribution(sentFreq, sentCount, 10);
                     wordsDistrList.Add(frqMas);
                     DataRow row = allFreq.NewRow();
                     row["НормФорма"] = param.word;
@@ -435,8 +428,8 @@ namespace bdProject
                         if (i == 10)
                             sentInterval = Convert.ToString(i * sentStep) + "-" + Convert.ToString(sentCount);
                         else
-                            sentInterval = Convert.ToString(i * sentStep) + "-" + Convert.ToString(sentCount);
-                        row[sentInterval] = frqMas[i];
+                            sentInterval = Convert.ToString(i * sentStep) + "-" + Convert.ToString((i + 1) * sentStep - 1);
+                    row[sentInterval] = frqMas[i];
                     }
                     allFreq.Rows.Add(row);
                 }

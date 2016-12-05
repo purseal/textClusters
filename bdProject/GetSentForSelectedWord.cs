@@ -11,6 +11,7 @@ namespace bdProject
     class GetSentForSelectedWord : Connect
     {
         public OleDbCommand command;
+        public int wordSentCount;
 
         public GetSentForSelectedWord(string BDLocation, string tableName, Parameters param):base(BDLocation, tableName)
         {
@@ -21,25 +22,26 @@ namespace bdProject
         private OleDbCommand CreateCommand(string tableName, Parameters param)
         {
             String commandString;
-            commandString = "SELECT DISTINCT НормФорма, НомерПредл FROM " + tableName +
-                " WHERE НормФорма = '" + param.word + "' ORDER BY НомерПредл;";                
+            commandString = "SELECT НормФорма, НомерПредл, НомерСлова FROM " + tableName +
+                " WHERE НормФорма = '" + param.word + "' ORDER BY НомерПредл, НомерСлова;";                
             command = new OleDbCommand(commandString, connection);            
             return command;
         }
 
 
-        public int[] GetFreqDestribution(GetSentForSelectedWord ts, int sentCount)
+        public int[] GetFreqDestribution(GetSentForSelectedWord ts, int sentCount, int partitionCount)
         {
             DataRowCollection rows = ts.dataSet.Tables[0].Rows;
-            int[] frqMas = new int[10];
+            int[] frqMas = new int[partitionCount];
             int k = 0;
+    //        wordSentCount = rows.Count;
             for (int j = 0; j < rows.Count; j++)
             {
-                while (Convert.ToInt32(rows[j][1]) > (k + 1) * (sentCount / 10))
+                while (Convert.ToInt32(rows[j][1]) > (k + 1) * (sentCount / partitionCount))
                 {
                     k++;
                 }
-                if (k == 10) frqMas[k - 1] += 1;
+                if (k == partitionCount) frqMas[k - 1] += 1;
                 else frqMas[k] += 1;
             }
             return frqMas;
