@@ -83,30 +83,51 @@ namespace bdProject
 
         private void findPeaksButton_Click(object sender, EventArgs e)
         {
-            GraphPane pane = new GraphPane(new RectangleF(1, 1, 300, 300), "", "Предложения", "Частота встречаемости");
-            PointPairList list = new PointPairList();
-            double xmin = -1;
-            double xmax = 1;
+            //GraphPane pane = new GraphPane(new RectangleF(1, 1, 300, 300), "", "Предложения", "Частота встречаемости");
+            //PointPairList list = new PointPairList();
+            //double xmin = -1;
+            //double xmax = 1;
 
-            // Заполняем список точек
-            for (double x = xmin; x <= xmax; x++)
+            //// Заполняем список точек
+            //for (double x = xmin; x <= xmax; x++)
+            //{
+            //    // добавим в список точку
+            //    list.Add(x, x);
+            //}
+
+            //// Создадим кривую с названием "Sinc", 
+            //// которая будет рисоваться голубым цветом (Color.Blue),
+            //// Опорные точки выделяться не будут (SymbolType.None)
+            //LineItem myCurve = pane.AddCurve("Sinc", list, Color.Blue, SymbolType.None);
+
+            //// Вызываем метод AxisChange (), чтобы обновить данные об осях. 
+            //// В противном случае на рисунке будет показана только часть графика, 
+            //// которая умещается в интервалы по осям, установленные по умолчанию
+            //Z.AxisChange();
+
+            //// Обновляем график
+            //zedGraph.Invalidate();
+            int percent = Convert.ToInt32(partTextBox.Text);
+            double part = (double)percent / 100;
+        //    Dictionary<string, int[]> wordsFreqs = new Dictionary<string, int[]>();
+            GraphForm form = new GraphForm();
+            for (int j = 0; j < destributionTable.RowCount * part; j++)
             {
-                // добавим в список точку
-                list.Add(x, x);
+                Parameters param = new Parameters();
+                param.word = destributionTable.Rows[j].Cells[0].Value.ToString();
+                GetSentForSelectedWord sentFreq = new GetSentForSelectedWord(MainForm.BDLocation, MainForm.tableName, param);
+                int[] frqMas = sentFreq.GetFreqDestribution(sentFreq, MainForm.sentCount, 10);
+                //        wordsFreqs.Add(param.word, frqMas);
+                form.drawGraph(param.word, frqMas);
+                break;
             }
+            form.Show();
+            //foreach (KeyValuePair<string, int[]> pair in wordsFreqs)
+            //{
+            //    form.drawGraph(pair.Key, pair.Value);
+            //    break;
+            //}
 
-            // Создадим кривую с названием "Sinc", 
-            // которая будет рисоваться голубым цветом (Color.Blue),
-            // Опорные точки выделяться не будут (SymbolType.None)
-            LineItem myCurve = pane.AddCurve("Sinc", list, Color.Blue, SymbolType.None);
-
-            // Вызываем метод AxisChange (), чтобы обновить данные об осях. 
-            // В противном случае на рисунке будет показана только часть графика, 
-            // которая умещается в интервалы по осям, установленные по умолчанию
-            Z.AxisChange();
-
-            // Обновляем график
-            zedGraph.Invalidate();
 
         }
 

@@ -46,5 +46,26 @@ namespace bdProject
             }
             return frqMas;
         }
+
+        public int[] GetFreqDestribution(GetSentForSelectedWord ts, int sentBegin, int sentCount, int partitionCount)
+        {
+            DataRowCollection rows = ts.dataSet.Tables[0].Rows;
+            int[] frqMas = new int[partitionCount];
+            int k = 0;
+            //        wordSentCount = rows.Count;
+            for (int j = 0; j < rows.Count; j++)
+            {
+                if (Convert.ToInt32(rows[j][1]) >= sentBegin && Convert.ToInt32(rows[j][1]) < sentBegin + sentCount)
+                {
+                    while (Convert.ToInt32(rows[j][1]) > (k + 1) * (sentCount / partitionCount) + sentBegin)
+                    {
+                        k++;
+                    }
+                    if (k == partitionCount) frqMas[k - 1] += 1;
+                    else frqMas[k] += 1;
+                }
+            }
+            return frqMas;
+        }
     }
 }
